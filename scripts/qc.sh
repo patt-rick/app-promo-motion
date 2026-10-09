@@ -9,6 +9,7 @@ VID="$1"; EVERY="${2:-75}"
 DIR="$(dirname "$VID")/qc"; mkdir -p "$DIR"
 ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate:format=duration -of compact "$VID"
 N=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 "$VID")
+N="${N//[^0-9]/}"  # csv output can carry a trailing comma when the file also has audio
 ROWS=$(( ( (N + EVERY - 1) / EVERY + 5 ) / 6 ))
 ffmpeg -v error -i "$VID" -vf "select='not(mod(n\,$EVERY))',scale=360:-1,drawtext=${FONT}text='%{n}':x=6:y=6:fontsize=22:fontcolor=red:box=1:boxcolor=white,tile=6x${ROWS}" -vsync 0 -frames:v 1 -y "$DIR/sheet.png"
 echo "sheet: $DIR/sheet.png  (6 per row; label k = frame k*$EVERY)"
