@@ -1,10 +1,14 @@
 import React from "react";
 import { Easing, interpolate, useCurrentFrame } from "remotion";
-import { color, fontFamily, look } from "../tokens";
+import { color, fontFamily, H, look, W } from "../tokens";
 
-const out = Easing.bezier(0.16, 1, 0.3, 1);
+// Portrait: y 260 clears the Reels/TikTok top overlay (copy stays inside y 250-1500 at 1080x1920).
+const TOP = H > W ? 260 : 150;
 
-/** Lines rise out of a mask word by word; `exitAt` sends them up and out. */
+/**
+ * Lines rise out of a mask word by word (`look.enter` frames on `look.curve`); `exitAt` sends them up and out
+ * over ~70% of that. Start the exit about 11 f + 1.5 f per extra line before the cut.
+ */
 export const Headline: React.FC<{
     lines: string[];
     at?: number;
@@ -17,7 +21,7 @@ export const Headline: React.FC<{
     align?: "left" | "right";
     /** "chars" for scripts without spaces (CJK, Thai); put direction: "rtl" on a parent for Arabic/Hebrew. */
     units?: "words" | "chars";
-}> = ({ lines, at = 0, exitAt, x = 72, y = 150, size = look.headline, tone = color.ink, stagger = 2, align = "left", units = "words" }) => {
+}> = ({ lines, at = 0, exitAt, x = 72, y = TOP, size = look.headline, tone = color.ink, stagger = 2, align = "left", units = "words" }) => {
     const frame = useCurrentFrame();
     let wordIndex = 0;
     return (
@@ -27,10 +31,10 @@ export const Headline: React.FC<{
                     <div style={{ display: "flex", justifyContent: align === "right" ? "flex-end" : "flex-start", gap: units === "chars" ? 0 : size * 0.26, fontSize: size, fontWeight: look.weight, letterSpacing: look.tracking, lineHeight: 1.0 }}>
                         {(units === "chars" ? Array.from(line) : line.split(" ")).map((word, wi) => {
                             const start = at + wordIndex++ * stagger;
-                            const inP = interpolate(frame, [start, start + 12], [1, 0], { easing: out, extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-                            const outP = exitAt === undefined ? 0 : interpolate(frame, [exitAt + li * 1.5, exitAt + li * 1.5 + 9], [0, -1], { easing: Easing.in(Easing.cubic), extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+                            const inP = interpolate(frame, [start, start + look.enter], [1, 0], { easing: look.curve, extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+                            const outP = exitAt === undefined ? 0 : interpolate(frame, [exitAt + li * 1.5, exitAt + li * 1.5 + Math.round(look.enter * 0.7)], [0, -1], { easing: Easing.in(Easing.cubic), extrapolateLeft: "clamp", extrapolateRight: "clamp" });
                             return (
-                                <span key={wi} style={{ display: "inline-block", transform: `translateY(${(inP + outP) * 110}%)` }}>
+                                <span key={wi} style={{ display: "inline-block", transform: `translateY(${(inP + outP) * 110}%)`, visibility: inP > 0.999 || outP < -0.999 ? "hidden" : undefined }}>
                                     {word}
                                 </span>
                             );
@@ -51,7 +55,7 @@ export const Caption: React.FC<{ text: string; at?: number; exitAt?: number; x?:
     width = 760,
 }) => {
     const frame = useCurrentFrame();
-    const p = interpolate(frame, [at, at + 10], [0, 1], { easing: out, extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+    const p = interpolate(frame, [at, at + look.enter - 2], [0, 1], { easing: look.curve, extrapolateLeft: "clamp", extrapolateRight: "clamp" });
     const e = exitAt === undefined ? 0 : interpolate(frame, [exitAt, exitAt + 6], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
     return (
         <div

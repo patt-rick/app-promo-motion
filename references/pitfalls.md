@@ -35,7 +35,7 @@
   then remux with `ffmpeg -c copy -movflags +faststart`. Better: write each render to a new filename.
 - `--log=error` hides progress; when a render "succeeds" with no output, check the file's timestamp.
 - `useVideoConfig().durationInFrames` inside a `<Sequence>` is the sequence's duration;
-  `Camera` relies on that for whip-outs.
+  `Camera` relies on that for its exit seams.
 
 ## Device etiquette
 - Long-press on a home screen can hit the user's widgets or open search. Read the screenshot after

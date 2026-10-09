@@ -1,4 +1,6 @@
 import { loadFont } from "@remotion/google-fonts/Manrope";
+import { EASE } from "./lib/ease";
+import { HEAVY, SOFT } from "./lib/springs";
 
 // Replace the font with the app's own typeface (any @remotion/google-fonts family, or a local font via staticFile).
 export const { fontFamily } = loadFont("normal", { weights: ["500", "700", "800"], subsets: ["latin"] });
@@ -23,6 +25,14 @@ export const look = {
     headline: 112, // px at 1080 wide; ~96 in 16:9
     weight: "800",
     tracking: "-0.045em",
+    // Motion feel, read by Headline, Caption, Sprite and Morph (references/motion.md section 1b):
+    //   springy / technical: enter 12, EASE.arrive, SOFT, pop true
+    //   editorial:           enter 20, EASE.glide,  HEAVY, pop false (no overshoot anywhere)
+    //   bold:                enter 9,  EASE.arrive, SOFT, pop true
+    enter: 12, // headline word entrance, frames; exits take ~70% of it
+    curve: EASE.arrive,
+    spring: SOFT as typeof SOFT | typeof HEAVY, // container / radius / colour springs
+    pop: true, // may the video use its one POP? (editorial: false -> use HEAVY instead)
 };
 
 // Brand for the end card. icon = null -> a wordmark is used (websites often have no app icon).

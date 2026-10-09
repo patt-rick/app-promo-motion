@@ -11,6 +11,8 @@
   "dependencies": {
     "@remotion/cli": "4.0.532",
     "@remotion/google-fonts": "4.0.532",
+    "@remotion/lottie": "4.0.532",
+    "lottie-web": "^5.13.0",
     "remotion": "4.0.532",
     "react": "19.1.0",
     "react-dom": "19.1.0"

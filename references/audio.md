@@ -49,13 +49,52 @@ python <skill>/scripts/beats.py path/to/track.mp3 --seconds 30 [--start 12.5]
 - Measured on test tracks: tempo within 0.1 BPM, average beat offset 0–5 ms, worst beats about 1 frame.
 
 ## UI sound effects and mixing
+- A long one-shot scene (a morph chain) has no cuts for the music to mark: add its state changes to
+  `crash_beats` (and optionally `fill_beats`) in `timeline.json` so the track still moves with the picture.
+- Align each effect by its **peak**, not its file start: tap/coin peaks are within the first frame, a ding's
+  attack about 1 f in; schedule the effect 0–2 f before the visual hit.
 - Place them at the **exact frames** of real events from the timing sheets: tap, notification ding,
-  result/confirm coin, whoosh on whips and fly-ins. At most one every 0.5 s.
+  result/confirm coin, whoosh on whips, zoom seams and fly-ins (not on every `curve` seam). At most one every 0.5 s.
 - Volumes under a −14 LUFS track: taps 0.3–0.4, results 0.3–0.35, whooshes 0.2–0.25, everything ≤ 0.4.
+- **Accent, don't narrate.** One cue per visible event. A sound that repeats (taps) changes on every repeat:
+  pitch steps (`toneFrequency` 1.0, 1.06, 1.12…) and ±0.05 volume; any other identical sound at most twice in 30 s
+  (the same ding on every click is a template tell). Continuous motion (drifts, camera pushes, morphs settling) stays silent.
+  At most **one riser and one impact** per video, the riser ending exactly on the impact (the hero reveal or the drop).
+- **Musical SFX:** tonal cues (dings, pops) stay in the track's key (A minor for the generated track). In a
+  sequence of pops (a stack dealing in, chips appearing) raise each one's pitch a step
+  (`<Audio toneFrequency>` 1.0, 1.06, 1.12…; it works only in the final render, not the Studio preview), and the
+  payoff resolves it.
+- **Pan follows position:** a sound for an element on the left of the frame sits slightly left. Remotion has no
+  pan control, so pre-render a panned copy with ffmpeg (`-af "pan=stereo|c0=0.8*c0|c1=0.5*c1"`) if it matters.
+- A quiet SFX file can't be fixed with volume. If its first 100 ms sits more than ~12 dB under its peak, trim
+  it to the first transient or replace it.
+- **Leave a breath** before the biggest moment: ~0.3–0.5 s of thinned-out music makes the hit land. With the
+  generated track, put that gap in `kick_gap_beats` (drums drop out) right before the hero beat; with a custom
+  track, keyframe the `<Audio>` `volume` down 6–10 dB over it (`interpolate`, 4 f ramps). The busiest moment
+  isn't the loudest.
 - `Promo.tsx` fades the music over the last 15 frames. That's harmless on the generated track, which
   rings out past the end, and needed on custom tracks.
 - After rendering, `qc.sh` prints loudness and peak: target about −14 LUFS and at most −1 dB. Peaks at
   0.0 dB mean stacked effects; lower them.
+- **Mastering the final mix:** a sparse mix can't reach −14 LUFS without crushing, so add sustained sound
+  instead of gain. When re-mastering the whole mix yourself, use two-pass
+  `loudnorm=I=-14:TP=-1.5:LRA=7:linear=true` (measure, then apply), and if a limiter follows it, use
+  `alimiter=limit=0.89:level=disabled` (otherwise it re-normalises and you land near −13). Measure on the
+  delivered MP4: AAC encoding adds ~0.5 dB of true peak.
 - Grid precision: with the generated track, `frameOf` rounds beats to frames. That's exact when
   1800/BPM is a whole number (120 BPM: 15 frames) and within half a frame otherwise. Fine for
   cuts; keep effects on clip-event frames.
+
+## Optional: voice-over (only when the user asks for one)
+Most promos are watched muted, so on-screen copy still carries the message on its own; a VO is extra.
+- **Voice first.** Get the final VO (the user's recording, or a voice they have rights to) before timing any
+  scene; an OS text-to-speech take is fine for timing drafts, never for shipping. Transcribe it with word
+  timestamps (e.g. Whisper) and size each scene to its line: line length + 0.2–0.5 s tail.
+- **Write for the ear:** one clause per scene, short words, the claim inside the first 10 s, numbers written as
+  spoken, at most ~3 words per second, each line starting ~0.3 s after the previous one ends.
+- **Lock visuals to words:** text and reveals lead their word by 1–2 f; a tap starts 6–9 f early so its press
+  lands on the verb. Put the payoff sound in the pause before the line that names it: SFX under speech get lost.
+- **Ducking:** music sits 12–14 dB under the voice. Either keyframe the music's `volume` down around each line
+  (`interpolate` with 6 f ramps), or mix in ffmpeg with
+  `sidechaincompress=threshold=0.02:ratio=4:attack=30:release=400`, then master to −14 LUFS.
+- The on-screen headline and the spoken line say the same thing in different words, never two different claims.

@@ -15,7 +15,7 @@ const track = (frame: number, keys: CamKey[], pick: (k: CamKey) => number) =>
         ? pick(keys[0])
         : interpolate(frame, keys.map((k) => k.f), keys.map(pick), { easing: ease, extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
-const BAR = 96; // browser chrome height in native px
+const BAR = 96; // browser chrome height in native px at 1920 wide (scaled by nativeW / 1920)
 
 /**
  * The product's real UI (app screen recording / website capture) as a floating sheet.
@@ -48,7 +48,8 @@ export const Screen: React.FC<{
     const rot = track(frame, cam, (k) => k.rot ?? 0);
     const s = (baseWidth / nativeW) * zoom;
     const browser = chrome === "browser";
-    const radius = browser ? 28 : 64;
+    const k = nativeW / 1920;
+    const radius = (browser ? 28 : 64) * k;
     const shadow = `0 50px 110px rgba(${color.shadow}, 0.22), 0 10px 26px rgba(${color.shadow}, 0.16), 0 0 0 2px rgba(${color.shadow}, 0.08)`;
 
     return (
@@ -69,22 +70,22 @@ export const Screen: React.FC<{
                         position: "absolute",
                         left: 0,
                         right: 0,
-                        top: -BAR,
-                        height: BAR,
+                        top: -BAR * k,
+                        height: BAR * k,
                         borderRadius: `${radius}px ${radius}px 0 0`,
                         background: color.paperDeep,
                         boxShadow: shadow,
                         display: "flex",
                         alignItems: "center",
-                        gap: 14,
-                        padding: "0 32px",
+                        gap: 14 * k,
+                        padding: `0 ${32 * k}px`,
                         fontFamily,
                     }}
                 >
                     {[0, 1, 2].map((i) => (
-                        <div key={i} style={{ width: 22, height: 22, borderRadius: 11, background: color.inkSoft, opacity: 0.35 }} />
+                        <div key={i} style={{ width: 22 * k, height: 22 * k, borderRadius: 11 * k, background: ["#FF5F57", "#FEBC2E", "#28C840"][i], opacity: 0.9 }} />
                     ))}
-                    <div style={{ marginLeft: 28, flex: 1, height: 52, borderRadius: 26, background: color.paper, color: color.inkSoft, fontSize: 28, display: "flex", alignItems: "center", padding: "0 28px" }}>
+                    <div style={{ marginLeft: 28 * k, flex: 1, height: 52 * k, borderRadius: 26 * k, background: color.surface, color: color.inkSoft, fontSize: 28 * k, display: "flex", alignItems: "center", padding: `0 ${28 * k}px` }}>
                         {url}
                     </div>
                 </div>

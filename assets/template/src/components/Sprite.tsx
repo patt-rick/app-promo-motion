@@ -1,13 +1,14 @@
 import React from "react";
 import { Easing, interpolate, staticFile, useCurrentFrame } from "remotion";
-import { color, SCREEN_W } from "../tokens";
+import { color, look, SCREEN_W } from "../tokens";
 import { aspect, Part, Rect } from "../ui";
 import { CamKey } from "./Screen";
 
 /** Pose of a sprite: centre (x, y) and width w in frame px, plus optional tilt. */
 export type Pose = { f: number; x: number; y: number; w: number; rot?: number; tiltX?: number; tiltY?: number; o?: number };
 
-const ease = Easing.bezier(0.2, 0.9, 0.25, 1);
+// pose-to-pose travel follows the direction's curve (tokens.ts look.curve)
+const ease = look.curve;
 
 const track = (frame: number, keys: Pose[], pick: (k: Pose) => number) =>
     keys.length === 1
@@ -111,6 +112,23 @@ export const Sprite: React.FC<{
                 {swap && layer(swap.part, { clipPath: `inset(0 ${(1 - swapP) * 100}% 0 0)` })}
             </div>
         </div>
+    );
+};
+
+/** A static crop of a real capture at width w (height from the rect's aspect): content for <Morph> states. */
+export const Crop: React.FC<{ part: Part; w: number }> = ({ part, w }) => {
+    const s = w / (part.rect[2] - part.rect[0]);
+    return (
+        <div
+            style={{
+                width: w,
+                height: w * aspect(part.rect),
+                borderRadius: (part.radius ?? 0) * s,
+                backgroundImage: `url(${staticFile(part.src)})`,
+                backgroundSize: `${(part.srcW ?? SCREEN_W) * s}px auto`,
+                backgroundPosition: `${-part.rect[0] * s}px ${-part.rect[1] * s}px`,
+            }}
+        />
     );
 };
 

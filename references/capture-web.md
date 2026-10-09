@@ -44,3 +44,10 @@ their password. Avoid or blur real customer data you see, and tell the user.
 - Zoom until body text reads at about 40 px or more in the output frame. If it can't be read at that
   size, it shouldn't be on screen.
 - Scroll-triggered reveals: capture them with `scroll`; once fired, they stay visible in later stills.
+
+## Product widgets on the marketing site
+Marketing pages often render real product UI as HTML (notification cards, balances, bus trackers). They are
+crisper than any screenshot: find the element by its text, climb to the card container, force
+`animation: none`, an opaque background, `transform: none`, `box-shadow: none`, then
+`locator.screenshot({ omitBackground: true })` at `deviceScaleFactor: 4`. Inset the crop 8 px and rely on the
+sprite's radius mask so photo or neighbour slivers at the corners disappear. Skip rotated or overlapping widgets.

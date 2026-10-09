@@ -1,7 +1,7 @@
 # app-promo-motion
 
 A Claude skill that makes **motion-graphics promo videos for apps and websites from their real UI**:
-lifted UI components animated as sprites, kinetic type, camera pushes, pans and whip transitions, and
+lifted UI components animated as sprites, kinetic type, camera pushes, pans and matched-seam cuts, and
 music that's either generated or your own track synced to the beat. Built on [Remotion](https://www.remotion.dev/).
 
 Ask Claude something like *"make a 30-second promo video for my app"* or *"animate our landing page
@@ -13,14 +13,18 @@ into a launch video"*. The skill takes Claude through:
    scrolls, real click-throughs and the exact positions of page elements.
 3. **Storyboard, then stills:** you approve both before anything is animated.
 4. **Build:** real components lifted out of the screens and animated (deal-ins, splits, flips,
-   before→after wipes, value chips travelling between cards), plus one of four visual directions so
-   different products don't look alike. Works in 9:16, 16:9 and 1:1.
+   before→after wipes, value chips travelling between cards), plus one of five visual directions (springy, editorial,
+   technical, morph, bold) so different products don't look alike. Timing, easing, springs and cuts follow
+   measured rules: reading holds sized to the copy, cuts whose motion matches across both sides, and one
+   signature move per video. Works in 9:16, 16:9 and 1:1.
 5. **Music:**
    - **Your own track:** any mp3/wav/m4a. Beat detection makes every cut land on a beat, the drop
      lands on the hero moment, and it's normalised to −14 LUFS.
    - **Generated:** a bespoke track in one of three styles (groove, minimal, calm), timed to the cuts,
      with nothing to license.
-6. **QC loop:** Claude scores rendered frames, fixes the worst ones, and checks loudness before handing over.
+6. **QC loop:** Claude scores rendered frames, measures the motion frame by frame (one-frame pops, glitches,
+   frozen stretches), has a fresh-eyes agent restate the message from the frames alone, fixes the worst
+   problems, and checks loudness before handing over.
 
 ## Install
 
@@ -45,9 +49,12 @@ Settings → Capabilities → Skills.
 
 ```
 SKILL.md                 workflow + non-negotiables
-references/              intake, Android & web capture, motion design system, audio, QC rubric, pitfalls
-scripts/                 new_project.sh, android.sh, web_capture.mjs, beats.py, compose.py, qc.sh, seed_asyncstorage.py
-assets/template/         the Remotion project (Screen, Sprite, Camera, Headline, Marker, Window, Tap, Notification)
+references/              intake, Android & web capture, motion design system, craft (type, seams, grade, blur,
+                         logo reveals, music to motion), audio, QC rubric, pitfalls
+scripts/                 new_project.sh, android.sh, web_capture.mjs, beats.py, compose.py, qc.sh, motion_check.py,
+                         seed_asyncstorage.py
+assets/template/         the Remotion project (Screen, Sprite, Camera, Headline, Marker, Window, Tap, Notification,
+                         Morph, Cursor, LottieLogo; lib/ease.ts and lib/springs.ts)
 ```
 
 ## Notes
